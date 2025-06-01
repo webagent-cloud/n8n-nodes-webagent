@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-webagent.webagent",
+	"nodeVersion": "0.0.1",
+	"codexVersion": "0.0.1",
+	"categories": ["Browser Automation"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.webagent.cloud/cloud-api-reference/introduction"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.webagent.cloud/introduction"
+			}
+		]
+	}
+}
