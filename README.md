@@ -26,7 +26,7 @@ Create a new task and execute it right away! Give your prompt and other paramete
 - Run a Existing Task
 This task allows you reuse an existing task and execute it. Useful if you want to organize your different tasks and retrieve tasks execution history in your dashboard.
 
-- Get Task Run
+- Get Run
 This task allows to get the result of a task execution. Useful for longer tasks executed in background, you can use this task to check the task completion and its results.
 
 ## Credentials
@@ -41,8 +41,8 @@ It could work with version below but has not been tested yet.
 ## Usage
 
 To avoid errors from n8n default request timeout, both `Create and Run a New Task` and `Run an Existing Task` operations are executed in background by default and only return task and run id at first glance.
-To use tasks task run results :
-- Periodically fetch results with `Get Task Run` and the corresponding run id
+To use run results :
+- Periodically fetch results with `Get Run` and the corresponding run id
 - Or, if the task execution is short, activate `wait_for_completion` parameter in `Create and Run a New Task` and `Run an Existing Task` operations.
 
 For more informations, refer to the [webagent documentation](https://docs.webagent.cloud/introduction)
@@ -54,6 +54,4 @@ For more informations, refer to the [webagent documentation](https://docs.webage
 
 ## Version history
 
-First version : 0.0.1
-
-
+Latest version : 0.0.2

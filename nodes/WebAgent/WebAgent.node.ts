@@ -1,5 +1,5 @@
 import { ILoadOptionsFunctions, INodePropertyOptions, INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
-import { taskRunFields, taskRunOperations } from './WebagentDescription';
+import { runFields, runOperations } from './WebagentDescription';
 
 async function getAuthContexts(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const responseData = await this.helpers.requestWithAuthentication.call(this, 'webagentApi', {
@@ -15,6 +15,22 @@ async function getAuthContexts(this: ILoadOptionsFunctions): Promise<INodeProper
 		return { name, value };
 	});
 	return [{ name: 'No Auth Context', value: '' }, ...options];
+}
+
+async function getTasks(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	const responseData = await this.helpers.requestWithAuthentication.call(this, 'webagentApi', {
+    baseURL: `https://api.webagent.cloud`,
+    url: `/tasks`,
+    method: 'GET',
+    json: true,
+  });
+
+	const options: INodePropertyOptions[] = responseData.map((authContext: {name: string; id: string}) => {
+		const name = authContext.name;
+		const value = authContext.id;
+		return { name, value };
+	});
+	return options;
 }
 
 export class Webagent implements INodeType {
@@ -54,18 +70,19 @@ export class Webagent implements INodeType {
         options: [
           {
             name: 'Task Run',
-            value: 'taskRun',
+            value: 'run',
           },
         ],
-        default: 'taskRun',
+        default: 'run',
       },
-      ...taskRunOperations,
-      ...taskRunFields,
+      ...runOperations,
+      ...runFields,
     ],
   };
   methods = {
 		loadOptions: {
 			getAuthContexts,
+      getTasks,
 		},
 	};
 }

@@ -1,6 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
 
-export const taskRunOperations: INodeProperties[] = [
+export const runOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
@@ -8,19 +8,19 @@ export const taskRunOperations: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 			},
 		},
 		options: [
 			{
-				name: 'Get Task Run',
+				name: 'Get Run',
 				value: 'get',
-				description: 'Get a task run by ID',
-				action: 'Get a task run by ID',
+				description: 'Get a run by ID',
+				action: 'Get a run by ID',
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/runs/{{$parameter["taskRunId"]}}',
+						url: '=/runs/{{$parameter["runId"]}}',
 					},
 				},
 			},
@@ -35,8 +35,10 @@ export const taskRunOperations: INodeProperties[] = [
 						url: '/runs',
 						body: {
 							prompt: '={{$parameter["prompt"]}}',
+							response_format: '={{$parameter["responseFormat"]}}',
 							json_schema: '={{$parameter["jsonSchema"] && $parameter["jsonSchema"] !== "{}" ? $parameter["jsonSchema"] : undefined}}',
 							session_timeout: '={{$parameter["sessionTimeout"]}}',
+							initial_url: '={{$parameter["initialUrl"] ? $parameter["initialUrl"] : undefined}}',
 							auth_context_id: '={{$parameter["authContextId"] ? $parameter["authContextId"] : undefined}}',
 							wait_for_completion: '={{$parameter["waitForCompletion"] ? $parameter["waitForCompletion"] : undefined}}',
 						},
@@ -47,18 +49,19 @@ export const taskRunOperations: INodeProperties[] = [
 				name: 'Run Task',
 				value: 'runTask',
 				description: 'Run An Existing Task',
-				action: 'Run a existing task',
+				action: 'Run an existing task',
 				routing: {
 					request: {
 						method: 'POST',
 						url: '={{"/tasks/" + $parameter["taskId"] + "/runs"}}',
 						body: {
-							prompt: '={{$parameter["prompt"] && $parameter["prompt"] !== "{}" ? $parameter["prompt"] : undefined}}',
-							json_schema: '={{$parameter["jsonSchema"] && $parameter["jsonSchema"] !== "{}" ? $parameter["jsonSchema"] : undefined}}',
-							session_timeout: '={{$parameter["sessionTimeout"]}}',
-							auth_context_id: '={{$parameter["authContextId"] ? $parameter["authContextId"] : undefined}}',
-							wait_for_completion: '={{$parameter["waitForCompletion"] ? $parameter["waitForCompletion"] : undefined}}',
-						},
+							prompt: '={{$parameter["overridePrompt"] && $parameter["prompt"] !== "" ? $parameter["prompt"] : undefined}}',
+							response_format: '={{$parameter["overrideResponseFormat"] && $parameter["responseFormat"] !== "" ? $parameter["responseFormat"] : undefined}}',
+							json_schema: '={{$parameter["overrideResponseFormat"] && $parameter["responseFormat"] == "json" && $parameter["jsonSchema"] && $parameter["jsonSchema"] !== "{}" ? $parameter["jsonSchema"] : undefined}}',
+							session_timeout: '={{parameter["overrideSessionTimeout"] ? $parameter["sessionTimeout"] : undefined}}',
+							initial_url: '={{$parameter["overrideInitialUrl"] && $parameter["initialUrl"] ? $parameter["initialUrl"] : undefined}}',
+							auth_context_id: '={{$parameter["overrideAuthContext"] && $parameter["authContextId"] ? $parameter["authContextId"] : undefined}}',
+							wait_for_completion: '={{$parameter["waitForCompletion"] ? $parameter["waitForCompletion"] : undefined}}',						},
 					},
 				},
 			},
@@ -69,15 +72,15 @@ export const taskRunOperations: INodeProperties[] = [
 
 const getTaskRunOperationFields: INodeProperties[] = [
 	{
-		displayName: 'Task Run ID',
-		name: 'taskRunId',
+		displayName: 'Run ID',
+		name: 'runId',
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The ID of the task run to retrieve',
+		description: 'The ID of the run to retrieve',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['get'],
 			},
 		},
@@ -94,20 +97,30 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 		description: 'The prompt to run the task with',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
 			},
 		},
 	},
 	{
-		displayName: 'JSON Results',
-		name: 'jsonResults',
-		type: 'boolean',
-		default: false,
-		description: 'Whether to return results in JSON format',
+		displayName: 'Response Format',
+		name: 'responseFormat',
+		type: 'options',
+		default: 'text',
+		required: true,
+		options: [
+			{
+				name: 'Text',
+				value: 'text',
+			},
+			{
+				name: 'JSON',
+				value: 'json',
+			},
+		],
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
 			},
 		},
@@ -120,9 +133,22 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 		description: 'Optional, The JSON schema for the response format',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
-				jsonResults: [true],
+				responseFormat: ['json'],
+			},
+		},
+	},
+	{
+		displayName: 'Initial URL',
+		name: 'initialUrl',
+		type: 'string',
+		default: '',
+		description: 'Initial URL to start the task with',
+		displayOptions: {
+			show: {
+				resource: ['run'],
+				operation: ['createAndRunTask'],
 			},
 		},
 	},
@@ -137,20 +163,7 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
-				operation: ['createAndRunTask'],
-			},
-		},
-	},
-	{
-		displayName: 'Advanced Parameters',
-		name: 'advancedParameters',
-		type: 'boolean',
-		default: false,
-		description: 'Whether to show advanced parameters',
-		displayOptions: {
-			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
 			},
 		},
@@ -163,9 +176,8 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 		description: 'The timeout for the task session in seconds',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
-				advancedParameters: [true],
 			},
 		},
 	},
@@ -173,11 +185,11 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 		displayName: 'Wait for Completion',
 		name: 'waitForCompletion',
 		type: 'boolean',
-		default: false,
+		default: true,
 		description: 'Whether to wait for the task to complete before returning results',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['createAndRunTask'],
 			},
 		},
@@ -186,28 +198,31 @@ const createAndRunTaskOperationFields: INodeProperties[] = [
 
 const runTaskOperationFields: INodeProperties[] = [
 	{
-		displayName: 'Task ID',
+		displayName: 'Task Name or ID',
 		name: 'taskId',
-		type: 'string',
+		type: 'options',
 		required: true,
+		typeOptions: {
+			loadOptionsMethod: 'getTasks',
+		},
 		default: '',
-		description: 'The task to run',
+		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
 			},
 		},
 	},
 	{
-		displayName: 'Override Fields',
-		name: 'overrideFields',
+		displayName: 'Override Prompt',
+		name: 'overridePrompt',
 		type: 'boolean',
 		default: false,
-		description: 'Whether to override default task fields',
+		description: 'Whether to override default task prompt',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
 			},
 		},
@@ -217,26 +232,50 @@ const runTaskOperationFields: INodeProperties[] = [
 		name: 'prompt',
 		type: 'string',
 		default: '',
+		required: true,
 		description: 'The prompt to run the task with',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
+				overridePrompt: [true],
 			},
 		},
 	},
 	{
-		displayName: 'JSON Results',
-		name: 'jsonResults',
+		displayName: 'Override Response Format',
+		name: 'overrideResponseFormat',
 		type: 'boolean',
 		default: false,
-		description: 'Whether to return results in JSON format',
+		description: 'Whether to override default task response format',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
+			},
+		},
+	},
+	{
+		displayName: 'Response Format',
+		name: 'responseFormat',
+		type: 'options',
+		default: 'text',
+		required: true,
+		options: [
+			{
+				name: 'Text',
+				value: 'text',
+			},
+			{
+				name: 'JSON',
+				value: 'json',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['run'],
+				operation: ['runTask'],
+				overrideResponseFormat: [true],
 			},
 		},
 	},
@@ -245,13 +284,55 @@ const runTaskOperationFields: INodeProperties[] = [
 		name: 'jsonSchema',
 		type: 'json',
 		default: '{}',
+		required: true,
 		description: 'Optional, The JSON schema for the response format',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
-				jsonResults: [true],
+				overrideResponseFormat: [true],
+				responseFormat: ["json"],
+			},
+		},
+	},
+	{
+		displayName: 'Override Initial URL',
+		name: 'overrideInitialUrl',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to override default task initial URL',
+		displayOptions: {
+			show: {
+				resource: ['run'],
+				operation: ['runTask'],
+			},
+		},
+	},
+	{
+		displayName: 'Initial URL',
+		name: 'initialUrl',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'Initial URL to start the task with',
+		displayOptions: {
+			show: {
+				resource: ['run'],
+				operation: ['runTask'],
+				overrideInitialUrl: [true],
+			},
+		},
+	},
+	{
+		displayName: 'Override Auth Context',
+		name: 'overrideAuthContext',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to override default task auth context',
+		displayOptions: {
+			show: {
+				resource: ['run'],
+				operation: ['runTask'],
 			},
 		},
 	},
@@ -263,26 +344,26 @@ const runTaskOperationFields: INodeProperties[] = [
 			loadOptionsMethod: 'getAuthContexts',
 		},
 		default: '',
+		required: true,
 		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
+				overrideAuthContext: [true],
 			},
 		},
 	},
 	{
-		displayName: 'Advanced Parameters',
-		name: 'advancedParameters',
+		displayName: 'Override Session Timeout',
+		name: 'overrideSessionTimeout',
 		type: 'boolean',
 		default: false,
-		description: 'Whether to show advanced parameters',
+		description: 'Whether to override default task session timeout',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
 			},
 		},
 	},
@@ -291,13 +372,13 @@ const runTaskOperationFields: INodeProperties[] = [
 		name: 'sessionTimeout',
 		type: 'number',
 		default: 300,
+		required: true,
 		description: 'The timeout for the task session in seconds',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
-				overrideFields: [true],
-				advancedParameters: [true],
+				overrideSessionTimeout: [true],
 			},
 		},
 	},
@@ -305,18 +386,18 @@ const runTaskOperationFields: INodeProperties[] = [
 		displayName: 'Wait for Completion',
 		name: 'waitForCompletion',
 		type: 'boolean',
-		default: false,
+		default: true,
 		description: 'Whether to wait for the task to complete before returning results',
 		displayOptions: {
 			show: {
-				resource: ['taskRun'],
+				resource: ['run'],
 				operation: ['runTask'],
 			},
 		},
 	},
 ];
 
-export const taskRunFields: INodeProperties[] = [
+export const runFields: INodeProperties[] = [
 	...getTaskRunOperationFields,
 	...createAndRunTaskOperationFields,
 	...runTaskOperationFields,
