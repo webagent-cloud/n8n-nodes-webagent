@@ -1,7 +1,7 @@
 {
 	"node": "n8n-nodes-webagent.webagent",
-	"nodeVersion": "0.0.2",
-	"codexVersion": "0.0.2",
+	"nodeVersion": "0.0.3",
+	"codexVersion": "0.0.3",
 	"categories": ["Browser Automation"],
 	"resources": {
 		"credentialDocumentation": [

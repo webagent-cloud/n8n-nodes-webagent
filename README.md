@@ -54,4 +54,4 @@ For more informations, refer to the [webagent documentation](https://docs.webage
 
 ## Version history
 
-Latest version : 0.0.2
+Latest version : 0.0.3
